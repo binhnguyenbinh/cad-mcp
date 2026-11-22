@@ -9,3 +9,4 @@ logs/
 .vs/
 # thu muc stage/dist do installer\pack_setup.py / build_python.py tao (C:\Autodesk\dist) va ban build trong cay nguon
 dist/
+tests/out/
