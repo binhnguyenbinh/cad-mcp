@@ -73,3 +73,27 @@ mcp_servers:
 Restart Hermes, các tool `mcp_autocad_*` (line, circle, rectangle, text, layer, save, screenshot, run_python, ...) sẽ xuất hiện. AutoCAD phải đang mở và không ở trạng thái busy (đóng dialog "Drawing Recovery" nếu có).
 
 Smoke test: `python -I -B tests/test_mcp_smoke.py` (AutoCAD phải đang mở) → 9/9 pass.
+
+## vn_std — vẽ theo quy cách Việt Nam (port từ D:/project/text_to_autocad)
+
+`vn_std.py` bọc MCP session và cho primitive chuẩn VN, dùng chung cho mọi bản vẽ:
+
+| Hàm | Quy cách |
+| :--- | :--- |
+| `setup_layers()` | layer AIA/TCVN (`A-WALL-STR`, `A-AXIS-GRID` linetype CENTER, `A-DIMS-MEAS`, `PACC-*`) |
+| `frame(w,h)` | khung 2 lớp, lề trái 25 mm, mép khác 10 mm |
+| `title_block()` | khung tên, chữ tự thu nhỏ cho vừa cột |
+| `dim_h/dim_v()` | dim tick 45°, không mũi tên, chữ trên đường dim |
+| `level()` | ký hiệu cao độ tam giác + số `±0.000` |
+| `axis_grid()` | lưới trục CENTER + bong bóng tròn có nhãn |
+| `wall/wall_run()` | tường poché SOLID, `wall_run` cắt lỗ mở tại cửa |
+| `door/window/stair()` | cửa cung quay, cửa sổ 3 nét, cầu thang 2 vế có mũi tên |
+
+Ví dụ: `python examples/nha5_vn_std.py` → tờ A3 1:100 (mặt bằng tầng 2-5 + mặt đứng chính).
+
+### Pitfall đã gặp
+- `new_drawing` tạo document mới nhưng MCP vẫn ghim document cũ → hình cũ + hình mới trộn vào một file. Muốn tờ sạch: đóng hết document, tạo 1 document, rồi ghi tên nó vào `%TEMP%\cad_claude_doc.txt` trước khi gọi tool.
+- Hệ số bề rộng chữ với `txt.shx` là **0.95 × chiều cao** mỗi ký tự (không phải 0.62 như Arial) — dùng 0.62 là chữ tràn khung tên.
+- `AddDimAligned` không plot ra PDF; `vn_std` vẽ dim thủ công (line + tick 45° + text).
+- Hatch tường phải `pattern="SOLID"`, scale 1; `ANSI31` scale 200 trên tường 200 mm gần như vô hình.
+- Kiểm tra tự động: SaveAs DXF (`doc.SaveAs(path, 13)`) → `ezdxf` đo bbox chữ, báo cặp chồng >12%; render PNG bằng `ezdxf.addons.drawing` thay vì đọc ảnh chụp màn hình.
