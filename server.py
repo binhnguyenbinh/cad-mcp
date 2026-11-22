@@ -643,6 +643,10 @@ def open_drawing(path: str) -> str:
 @_tool()
 def new_drawing() -> str:
     """Tạo bản vẽ mới. ĐỔI TAB của user: chỉ dùng khi user yêu cầu rõ."""
+    app = _app()
+    docs = app.Documents
+    if docs.Count == 0:
+        return _R(docs.Add()).Name
     return _doc().Application.Documents.Add().Name
 
 

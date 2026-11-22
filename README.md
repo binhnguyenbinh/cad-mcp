@@ -57,3 +57,19 @@ Xem `installer\docs\HDSD.html`.
 ## Giấy phép
 
 Phần mềm được phát hành theo giấy phép MIT. Copyright (c) 2026 Gaus. Xem tệp `LICENSE`.
+
+## Hermes / MCP (vẽ AutoCAD qua MCP)
+
+`server.py` là MCP server (stdio) nói chuyện với AutoCAD đang mở qua COM. Hermes Agent chỉ cần đăng ký trong `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  autocad:
+    command: "C:/Users/<user>/AppData/Local/hermes/installs/<install>/environments/<env>/venv/Scripts/python.exe"
+    args: ["D:/project/cad-mcp/server.py"]
+    timeout: 120
+```
+
+Restart Hermes, các tool `mcp_autocad_*` (line, circle, rectangle, text, layer, save, screenshot, run_python, ...) sẽ xuất hiện. AutoCAD phải đang mở và không ở trạng thái busy (đóng dialog "Drawing Recovery" nếu có).
+
+Smoke test: `python -I -B tests/test_mcp_smoke.py` (AutoCAD phải đang mở) → 9/9 pass.
