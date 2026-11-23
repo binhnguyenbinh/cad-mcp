@@ -97,3 +97,19 @@ Ví dụ: `python examples/nha5_vn_std.py` → tờ A3 1:100 (mặt bằng tần
 - `AddDimAligned` không plot ra PDF; `vn_std` vẽ dim thủ công (line + tick 45° + text).
 - Hatch tường phải `pattern="SOLID"`, scale 1; `ANSI31` scale 200 trên tường 200 mm gần như vô hình.
 - Kiểm tra tự động: SaveAs DXF (`doc.SaveAs(path, 13)`) → `ezdxf` đo bbox chữ, báo cặp chồng >12%; render PNG bằng `ezdxf.addons.drawing` thay vì đọc ảnh chụp màn hình.
+
+## Sơ đồ chữa cháy PACC — `examples/pacc_nha5.py`
+
+Tái dùng 53 ký hiệu C07 của `text_to_autocad` (`pacc_symbols_data.insert_pacc_symbol`) + ezdxf:
+
+| Bước | Nguồn |
+| :--- | :--- |
+| Ký hiệu xe CC, lăng A/B, trụ nước, điểm cháy, hướng tấn công | `D:\project\text_to_autocad\pacc_symbols_data.py` (bóc sẵn từ temp_sodo.dwg) |
+| Tờ A3 1:100 (1 unit = 1 m) | ezdxf trực tiếp, không qua COM |
+| DWG | `accoreconsole.exe /i x.dxf /s save_dwg.scr` với `SAVEAS 2018` (COM bị "Call was rejected" khi acad mới khởi động thì dùng được) |
+
+### Pitfall
+- **Color policy:** ezdxf render mặc định nền đen → ACI 7 (màu 7 = trắng) thành chữ trắng vô hình trên trang trắng. Bắt buộc `Configuration(background_policy=BackgroundPolicy.WHITE)`.
+- **Kích thước ký hiệu trong catalog chuẩn hoá ~0.6 đơn vị** — không phải mét. Quy đổi qua bảng `SYM_SCALE` (xe 7.5 m → scale 13, v.v). Nhầm scale = xe 0.58 m.
+- matplotlib backend của ezdxf tự đổi figsize theo đơn vị; ép lại `fig.set_size_inches(A3)` sau `draw_layout()`.
+- Vẽ PACC bằng COM/AutoCAD dễ bị "Call was rejected by callee" (acad mới bật hoặc còn lệnh dở) → pipeline ezdxf + accoreconsole không phụ thuộc GUI.
